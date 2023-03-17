@@ -1,28 +1,36 @@
 # RUN COMMAND: env FLASK_APP=app.py flask run
+# Calling apis using CURL: curl -X METHOD_TYPE url
 
 # import libraries
 import time
-import datetime
 from flask import Flask
 import RPi.GPIO as GPIO
 
 # import GPIO constants & functions
 from lockerActions import openDoor, checkDoorState, turnOnDoorLights, listenDoorEquipmentState, turnOffDoorLights
 from gpioActions import initializePins, STATUS_DOOR_X
-from multiplexorActions import resetDoorSensorsMultiplexor
 
 # import general constants
-from constants import durationOfDoorOpenedFeedback
+from constants import durationOfDoorOpenedFeedback, durationOfDoorWaitingToBeClosed
 
 app = Flask(__name__)
 
+if __name__ == '__main__':
+    app.run(debug=True, port=8080, host='0.0.0.0')
 
 # EXCEPTII: Tratare cazuri cand cineva blocheaza usa!!
 # POWER UP CHECKS
 
+# Call this api using the following command: curl -X POST http://127.0.0.1:5000/power-up
+# CODE VERIFIED - WORKING
+
+
 @app.route('/power-up', methods=['POST'])
 def powerUp():
+    print('\nAPI CALL START___________power up method called___________API CALL START\n')
     initializePins()
+    print('\nAPI CALL END___________power up method called___________API CALL END\n')
+    return f'POWER-UP FINISH'
 
 
 # START RENTAL FLOW
@@ -36,45 +44,47 @@ def powerUp():
 # 4b. If no waiting for confirmation
 # 5. If DOOR was CLOSED send confirmation to server with TIMESTAMP
 # 6. Turn off the light.
+
+# Call this api using the following command: curl -X POST http://127.0.0.1:5000/start-rental/doorNumber
+# CODE VERIFIED - WORKING
 @app.route('/start-rental/<doorNumber>', methods=['POST'])
 def startRental(doorNumber):
-    print('START___________startRental method called with doorNumber ',
-          doorNumber, '___________START')
+    print('\nAPI CALL START___________startRental method called with doorNumber ',
+          doorNumber, '___________API CALL START\n')
 
     # 1. Open door
     openDoor(doorNumber)
 
     # 2. Listen to DOOR opened state - OPENED
     doorState = checkDoorState(doorNumber)
-
     time.sleep(durationOfDoorOpenedFeedback)
 
     # 2a. If DOOR was not OPENED OPEN DOOR.
     if doorState == "CLOSED":
         openDoor(doorNumber)
+        doorState = checkDoorState(doorNumber)
+        time.sleep(durationOfDoorOpenedFeedback)
 
     # 2b. If DOOR was OPENED turn on the light
     if doorState == "OPENED":
         turnOnDoorLights(doorNumber)
         # 3. If DOOR was OPENED send confirmation to server with TIMESTAMP
-        print("Send door opened confirmation to server with TIMESTAMP = ",
-              datetime.datetime.now())
+        print("\nAPI CALL:      Send door opened confirmation to server")
 
     # 4. Can DOOR be CLOSED?
     # 4a. If yes Listen to DOOR opened state - CLOSED
-    GPIO.add_event_detect(STATUS_DOOR_X, GPIO.FALLING,
-                          callback=doorClosedCallback, bouncetime=200)
+    while doorState == "OPENED":
+        doorState = checkDoorState(doorNumber)
+        time.sleep(durationOfDoorOpenedFeedback)
+        time.sleep(durationOfDoorWaitingToBeClosed)
 
-    def doorClosedCallback():
-        # 5. If DOOR was CLOSED send confirmation to server with TIMESTAMP
-        print("Send door closed confirmation to server with TIMESTAMP = ",
-              datetime.datetime.now())
-        # 6. Turn off the light.
-        turnOffDoorLights(doorNumber)
-        GPIO.remove_event_detect(STATUS_DOOR_X)
+    # 5. If DOOR was CLOSED send confirmation to server with TIMESTAMP
+    print("\nAPI CALL:    Send door closed confirmation to server\n")
+    # 6. Turn off the light.
+    turnOffDoorLights(doorNumber)
 
-    print('END___________startRental method called with doorNumber ',
-          doorNumber, '___________END')
+    print('\nAPI CALL END___________startRental method called with doorNumber ',
+          doorNumber, '___________API CALL END\n')
 
     return f'RENTAL HAS STARTED'
 
@@ -88,65 +98,70 @@ def startRental(doorNumber):
 # 5. If DOOR was CLOSED send confirmation to server with TIMESTAMP
 # 6. Turn off the light
 
+# Call this api using the following command: curl -X POST http://127.0.0.1:5000/open-locker/doorNumber
+# CODE VERIFIED - WORKING
+
 
 @app.route('/open-locker/<doorNumber>', methods=['POST'])
 def openLocker(doorNumber):
-    print('START___________openLocker method called with doorNumber ',
-          doorNumber, '___________START')
+    print('\nAPI CALL START___________openLocker method called with doorNumber ',
+          doorNumber, '___________API CALL START\n')
 
     # 1. Open door
     openDoor(doorNumber)
 
     # 2. Listen to DOOR opened state - OPENED
     doorState = checkDoorState(doorNumber)
-
     time.sleep(durationOfDoorOpenedFeedback)
 
     # 2a. If DOOR was not OPENED OPEN DOOR.
     if doorState == "CLOSED":
         openDoor(doorNumber)
+        doorState = checkDoorState(doorNumber)
+        time.sleep(durationOfDoorOpenedFeedback)
 
     # 2b. If DOOR was OPENED turn on the light
     if doorState == "OPENED":
         turnOnDoorLights(doorNumber)
         # 3. If DOOR was OPENED send confirmation to server with TIMESTAMP
-        print("Send door opened confirmation to server with TIMESTAMP = ",
-              datetime.datetime.now())
+        print("\nAPI CALL:      Send door opened confirmation to server")
 
     # 4. Listen to DOOR opened state - CLOSED
-    GPIO.add_event_detect(STATUS_DOOR_X, GPIO.FALLING,
-                          callback=doorClosedCallback, bouncetime=200)
+    doorState = "OPENED"
+    while doorState == "OPENED":
+        doorState = checkDoorState(doorNumber)
+        time.sleep(durationOfDoorOpenedFeedback)
+        time.sleep(durationOfDoorWaitingToBeClosed)
 
-    def doorClosedCallback():
-        # 5. If DOOR was CLOSED send confirmation to server with TIMESTAMP
-        print("Send door closed confirmation to server with TIMESTAMP = ",
-              datetime.datetime.now())
-        # 6. Turn off the light
-        turnOffDoorLights(doorNumber)
-        GPIO.remove_event_detect(STATUS_DOOR_X)
+    # 5. If DOOR was CLOSED send confirmation to server with TIMESTAMP
+    print("\nAPI CALL:    Send door closed confirmation to server\n")
+    # 6. Turn off the light.
+    turnOffDoorLights(doorNumber)
 
-    print('END___________openLocker method called with doorNumber ',
-          doorNumber, '___________END')
+    print('\nAPI CALL END___________openLocker method called with doorNumber ',
+          doorNumber, '___________API CALL END\n')
 
     return f'DOOR WAS CLOSED'
 
 
 # READ BOARD PRESENT STATE FLOW
 # 1. Read BOARD present state
-# 2. Send confirmation to server with STATE and TIMESTAMP
+# 2. \nAPI CALL:    Send confirmation to server with STATE and TIMESTAMP
+
+# Call this api using the following command: curl -X POST http://127.0.0.1:5000/read-paddle-board-state/doorNumber
+# CODE VERIFIED - WORKING
 @app.route('/read-paddle-board-state/<doorNumber>', methods=['POST'])
 def readPaddleBoardState(doorNumber):
-    print('START___________readPaddleBoardState method called with doorNumber ',
-          doorNumber, '___________START')
+    print('\nSTART___________readPaddleBoardState method called with doorNumber ',
+          doorNumber, '___________START\n')
 
     # 1. Read BOARD present state
     equipmentState = listenDoorEquipmentState(doorNumber)
-    # 2. Send confirmation to server with STATE and TIMESTAMP
-    print("Send board state confirmation to server with STATE = ", equipmentState, " and TIMESTAMP = ",
-          datetime.datetime.now())
+    # 2. \nAPI CALL:      Send confirmation to server with STATE and TIMESTAMP
+    print("\nAPI CALL:    Send board state confirmation to server with STATE = ", equipmentState, )
 
-    print('END___________readPaddleBoardState method called with doorNumber ',
-          doorNumber, '___________END')
+    print('\nEND___________readPaddleBoardState method called with doorNumber ',
+          doorNumber, '___________END\n')
 
     return f'PADDLE BOARD STATE READ'
 
@@ -164,50 +179,55 @@ def readPaddleBoardState(doorNumber):
 # 6. If BOARD is not PRESENT open DOOR and return to step 5.
 # 7. If BOARD is PRESENT send confirmation to server with TIMESTAMP
 # 8. Turn off the light
+
+# Call this api using the following command: curl -X POST http://127.0.0.1:5000/end-rental/doorNumber
+# CODE VERIFIED - WORKING
 @app.route('/end-rental/<doorNumber>', methods=['POST'])
 def endRental(doorNumber):
-    print('START___________endRental method called with doorNumber ',
-          doorNumber, '___________START')
+    print('\nAPI CALL START___________endRental method called with doorNumber ',
+          doorNumber, '___________API CALL START\n')
 
     # 1. Open door
     openDoor(doorNumber)
 
     # 2. Listen to DOOR opened state - OPENED
     doorState = checkDoorState(doorNumber)
-
     time.sleep(durationOfDoorOpenedFeedback)
 
     # 2a. If DOOR was not OPENED OPEN DOOR.
     if doorState == "CLOSED":
         openDoor(doorNumber)
+        doorState = checkDoorState(doorNumber)
+        time.sleep(durationOfDoorOpenedFeedback)
 
     # 2b. If DOOR was OPENED turn on the light
+    doorState = "OPENED"
     if doorState == "OPENED":
         turnOnDoorLights(doorNumber)
         # 3. If DOOR was OPENED send confirmation to server with TIMESTAMP
-        print("Send door opened confirmation to server with TIMESTAMP = ",
-              datetime.datetime.now())
+        print("\nAPI CALL:      Send door opened confirmation to server")
 
     # 4. Can DOOR be CLOSED?
     # 4a. If yes Listen to DOOR opened state - CLOSED
-    GPIO.add_event_detect(STATUS_DOOR_X, GPIO.FALLING,
-                          callback=doorClosedCallback, bouncetime=200)
-
-    def doorClosedCallback():
+    equipmentState = False
+    while doorState == "OPENED" or equipmentState == False:
+        doorState = checkDoorState(doorNumber)
+        time.sleep(durationOfDoorOpenedFeedback)
+        time.sleep(durationOfDoorWaitingToBeClosed)
         # 5. If DOOR was CLOSED listen to BOARD present state - PRESENT
-        equipmentState = listenDoorEquipmentState(doorNumber)
-        if equipmentState == False:
+        if doorState == "CLOSED":
+            equipmentState = listenDoorEquipmentState(doorNumber)
             # 6. If BOARD is not PRESENT open DOOR and return to step 5.
-            print("Send door reopened confirmation to server with TIMESTAMP = ",
-                  datetime.datetime.now())
-            openDoor(doorNumber)
-        else:
-            # 7. If BOARD is PRESENT send confirmation to server with TIMESTAMP
-            # 8. Turn off the light
-            print("Send door closed confirmation to server with TIMESTAMP = ",
-                  datetime.datetime.now())
-            turnOffDoorLights(doorNumber)
-            GPIO.remove_event_detect(STATUS_DOOR_X)
+            if equipmentState == False:
+                print("\nAPI CALL:  Send door reopened confirmation to server")
+                openDoor(doorNumber)
+            else:
+                # 7. If BOARD is PRESENT send confirmation to server with TIMESTAMP
+                # 8. Turn off the light
+                print("\nAPI CALL:  Send door closed confirmation to server")
+                turnOffDoorLights(doorNumber)
 
-    print('END___________endRental method called with doorNumber ',
-          doorNumber, '___________END')
+    print('\nAPI CALL END___________endRental method called with doorNumber ',
+          doorNumber, '___________API CALL END\n')
+
+    return f'END RENTAL'

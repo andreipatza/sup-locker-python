@@ -17,8 +17,8 @@ from constants import durationOfImplse, timeBetweenImplses
 
 
 def openDoor(doorNumber):
-    print('START___________openDoor method called with doorNumber ',
-          doorNumber, '___________START')
+    print('\nSTART___________openDoor method called with doorNumber ',
+          doorNumber, '___________START\n')
     # doorNumber type int ( 0 - 15 );
 
     # set multiplexor values for door with doorNumber
@@ -56,13 +56,13 @@ def openDoor(doorNumber):
     setPinVoltage(EN_DXX_ON, "HIGH")
 
     # Door was opened
-    print('END___________openDoor method called with doorNumber ',
-          doorNumber, '___________END')
+    print('\nEND___________openDoor method called with doorNumber ',
+          doorNumber, '___________END\n')
 
 
 def checkDoorState(doorNumber):
-    print('START___________checkDoorState method called with doorNumber ',
-          doorNumber, '___________START')
+    print('\nSTART___________checkDoorState method called with doorNumber ',
+          doorNumber, '___________START\n')
     # doorNumber type int ( 0 - 15 );
 
     # set multiplexor values for door with doorNumber
@@ -81,16 +81,16 @@ def checkDoorState(doorNumber):
     print('VOLTAGE SET: OUTPUT PIN STATUS_COMMAND TO ', 'LOW')
     setPinVoltage(STATUS_COMMAND, "LOW")
 
-    print('END___________checkDoorState method called with doorNumber ',
-          doorNumber, '___________END')
+    print('\nEND___________checkDoorState method called with doorNumber ',
+          doorNumber, '___________END\n')
 
     # return proper value
     return doorState
 
 
 def turnOnDoorLights(doorNumber):
-    print('START___________turnOnDoorLights method called with doorNumber ',
-          doorNumber, '___________START')
+    print('\nSTART___________turnOnDoorLights method called with doorNumber ',
+          doorNumber, '___________START\n')
     # doorNumber type int ( 0 - 15 );
 
     # set multiplexor values for door with doorNumber
@@ -104,13 +104,13 @@ def turnOnDoorLights(doorNumber):
     print('VOLTAGE SET: OUTPUT PIN LED_ON_X TO ', 'HIGH')
     setPinVoltage(LED_ON_X, "HIGH")
 
-    print('END___________turnOnDoorLights method called with doorNumber ',
-          doorNumber, '___________END')
+    print('\nEND___________turnOnDoorLights method called with doorNumber ',
+          doorNumber, '___________END\n')
 
 
 def turnOffDoorLights(doorNumber):
-    print('START___________turnOffDoorLights method called with doorNumber ',
-          doorNumber, '___________START')
+    print('\nSTART___________turnOffDoorLights method called with doorNumber ',
+          doorNumber, '___________START\n')
     # doorNumber type int ( 0 - 15 );
 
     # set multiplexor values for door with doorNumber
@@ -130,13 +130,13 @@ def turnOffDoorLights(doorNumber):
     # Set IN4 = 0
     resetDoorSensorsMultiplexor()
 
-    print('END___________turnOffDoorLights method called with doorNumber ',
-          doorNumber, '___________END')
+    print('\nEND___________turnOffDoorLights method called with doorNumber ',
+          doorNumber, '___________END\n')
 
 
 def listenDoorEquipmentState(doorNumber):
-    print('START___________listenDoorEquipmentState method called with doorNumber ',
-          doorNumber, '___________START')
+    print('\nSTART___________listenDoorEquipmentState method called with doorNumber ',
+          doorNumber, '___________START\n')
     # doorNumber type int ( 0 - 15 );
 
     # set multiplexor values for door with doorNumber
@@ -159,10 +159,10 @@ def listenDoorEquipmentState(doorNumber):
     resetDoorSensorsMultiplexor()
 
     if (sensor1status == "PRESENT" and sensor2status == "PRESENT" and sensor3status == "ABSENT"):
-        print('END___________listenDoorEquipmentState method called with doorNumber ',
-              doorNumber, 'ended with value True___________END')
+        print('\nEND___________listenDoorEquipmentState method called with doorNumber ',
+              doorNumber, '\nENDed with value True___________END\n')
         return True
     else:
-        print('END___________listenDoorEquipmentState method called with doorNumber ',
-              doorNumber, 'ended with value False___________END')
+        print('\nEND___________listenDoorEquipmentState method called with doorNumber ',
+              doorNumber, '\nENDed with value False___________END\n')
         return False

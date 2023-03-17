@@ -3,12 +3,12 @@ from gpioActions import S0, S1, S2, S3, IN1, IN2, IN3, IN4
 
 
 def setDoorSelectionMultiplexor(doorNumber):
-    print('START___________setDoorSelectionMultiplexor method called with doorNumber ',
-          doorNumber, '___________START')
+    print('\nSTART___________setDoorSelectionMultiplexor method called with doorNumber ',
+          doorNumber, '___________START\n')
     # doorNumber type int ( 0 - 15 );
 
     # convert doorNumber from integer to binary
-    doorNumberBinary = format(doorNumber, '04b')
+    doorNumberBinary = format(int(doorNumber), '04b')
 
     # get binary array
     convertedBinaryArray = [int(x) for x in doorNumberBinary]
@@ -29,14 +29,16 @@ def setDoorSelectionMultiplexor(doorNumber):
     print('VOLTAGE SET: OUTPUT PIN S3 TO ', S3value)
     setPinVoltage(S3, S3value)
 
-    print('END___________setDoorSelectionMultiplexor method called with doorNumber ',
-          doorNumber, '___________END')
+    print('\nEND___________setDoorSelectionMultiplexor method called with doorNumber ',
+          doorNumber, '___________END\n')
 
 
 def setDoorSensorsMultiplexor(doorNumber):
-    print('START___________setDoorSensorsMultiplexor method called with doorNumber ',
-          doorNumber, '___________START')
+    print('\nSTART___________setDoorSensorsMultiplexor method called with doorNumber ',
+          doorNumber, '___________START\n')
     # doorNumber type int ( 0 - 15 )
+
+    doorNumber = int(doorNumber)
 
     # If doorNumber between 0 - 3
     # Set IN1 = 1
@@ -62,12 +64,12 @@ def setDoorSensorsMultiplexor(doorNumber):
         print('VOLTAGE SET: OUTPUT PIN IN4 TO ', 'HIGH')
         setPinVoltage(IN4, "HIGH")
 
-    print('END___________setDoorSensorsMultiplexor method called with doorNumber ',
-          doorNumber, '___________END')
+    print('\nEND___________setDoorSensorsMultiplexor method called with doorNumber ',
+          doorNumber, '___________END\n')
 
 
 def resetDoorSensorsMultiplexor():
-    print('START___________resetDoorSensorsMultiplexor method called___________START')
+    print('\nSTART___________resetDoorSensorsMultiplexor method called___________START\n')
     print('VOLTAGE SET: OUTPUT PIN IN1 TO ', 'LOW')
     setPinVoltage(IN1, "LOW")
     print('VOLTAGE SET: OUTPUT PIN IN2 TO ', 'LOW')
@@ -76,4 +78,4 @@ def resetDoorSensorsMultiplexor():
     setPinVoltage(IN3, "LOW")
     print('VOLTAGE SET: OUTPUT PIN IN4 TO ', 'LOW')
     setPinVoltage(IN4, "LOW")
-    print('END___________resetDoorSensorsMultiplexor method called___________END')
+    print('\nEND___________resetDoorSensorsMultiplexor method called___________END\n')
