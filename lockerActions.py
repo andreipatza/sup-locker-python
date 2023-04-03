@@ -68,23 +68,21 @@ def checkDoorState(doorNumber):
     # set multiplexor values for door with doorNumber
     setDoorSelectionMultiplexor(doorNumber)
 
-    # Set STATUS_COMMAND = 1
-    print('VOLTAGE SET: OUTPUT PIN STATUS_COMMAND TO ', 'HIGH')
-    setPinVoltage(STATUS_COMMAND, "HIGH")
+    print('VOLTAGE SET: OUTPUT PIN EN_DXX_ON TO ', 'HIGH')
+    setPinVoltage(EN_DXX_ON, "HIGH")
 
     # Read STATUS_DOOR_X
-    # if STATUS_DOOR_X is HIGH the door is CLOSED
-    # if STATUS_DOOR_X is LOW  the door is OPENED
-    doorState = "OPENED" if readPinVoltage(STATUS_DOOR_X) == 0 else "CLOSED"
+    doorState = "CLOSED" if readPinVoltage(STATUS_DOOR_X) == 0 else "OPENED"
+    print('DOOR STATE IS:', doorState)
 
-    # Set STATUS_COMMAND = 0
-    print('VOLTAGE SET: OUTPUT PIN STATUS_COMMAND TO ', 'LOW')
-    setPinVoltage(STATUS_COMMAND, "LOW")
+    print('VOLTAGE SET: OUTPUT PIN EN_DXX_ON TO ', 'LOW')
+    setPinVoltage(EN_DXX_ON, "LOW")
 
     print('\nEND___________checkDoorState method called with doorNumber ',
           doorNumber, '___________END\n')
 
     # return proper value
+
     return doorState
 
 
@@ -134,7 +132,7 @@ def turnOffDoorLights(doorNumber):
           doorNumber, '___________END\n')
 
 
-def listenDoorEquipmentState(doorNumber):
+def listenDoorEquipmentState(doorNumber, shouldResetMultiplexors):
     print('\nSTART___________listenDoorEquipmentState method called with doorNumber ',
           doorNumber, '___________START\n')
     # doorNumber type int ( 0 - 15 );
@@ -144,6 +142,8 @@ def listenDoorEquipmentState(doorNumber):
 
     # set multiplexor values for sensors of door with doorNumber
     setDoorSensorsMultiplexor(doorNumber)
+
+    time.sleep(0.1)
 
     # Listen to sensors state
     # Listen to STATUS_SENSOR1_X
@@ -156,9 +156,17 @@ def listenDoorEquipmentState(doorNumber):
     sensor3status = "PRESENT" if readPinVoltage(
         STATUS_SENSOR3_X) == 0 else "ABSENT"
 
-    resetDoorSensorsMultiplexor()
+    print('STATUS: sensor1status', sensor1status)
+    print('STATUS: sensor2status', sensor2status)
+    print('STATUS: sensor3status', sensor3status)
 
-    if (sensor1status == "PRESENT" and sensor2status == "PRESENT" and sensor3status == "ABSENT"):
+    # TODO: test time
+    time.sleep(0.1)
+
+    if shouldResetMultiplexors == True:
+        resetDoorSensorsMultiplexor()
+
+    if (sensor1status == "PRESENT" and sensor2status == "PRESENT" and sensor3status == "PRESENT"):
         print('\nEND___________listenDoorEquipmentState method called with doorNumber ',
               doorNumber, '\nENDed with value True___________END\n')
         return True
